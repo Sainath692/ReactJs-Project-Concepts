@@ -3,27 +3,9 @@ import "./App.css";
 import axios from "axios";
 
 function App() {
-  const [products, setProducts] = useState([]);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   // if we need to use async awaiyt in useeffect for that we need to use ()() - immediately invoked functions - we cant use async await directly
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        setError(false);
-        const response = await axios.get("/api/products");
-        console.log("res", response.data);
-        setProducts(response.data);
-        setLoading(false);
-      } catch (error) {
-        setError(true);
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const [products, error, loading] = customeReactQuery("/api/products");
 
   if (loading) {
     return <h1>Loading ....</h1>;
@@ -42,3 +24,27 @@ function App() {
 }
 
 export default App;
+
+const customeReactQuery = (urlPath) => {
+  const [products, setProducts] = useState([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        setError(false);
+        const response = await axios.get(urlPath);
+        console.log("res", response.data);
+        setProducts(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError(true);
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  return [products, error, loading];
+};
