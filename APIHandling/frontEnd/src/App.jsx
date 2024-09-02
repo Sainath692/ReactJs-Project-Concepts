@@ -9,23 +9,35 @@ function App() {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("Laptop");
 
   useEffect(() => {
+    const controller = new AbortController();
     (async () => {
       try {
         setLoading(true);
         setError(false);
-        const response = await axios.get(`/api/products ? search` + search);
+        const response = await axios.get(`/api/products?search=` + search, {
+          signal: controller.signal,
+        });
         console.log("res", response.data);
         setProducts(response.data);
         setLoading(false);
       } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log("request cancelled", error.message);
+          return;
+        }
         setError(true);
         setLoading(false);
       }
     })();
-  }, []);
+
+    //cleanup
+    return () => {
+      controller.abort();
+    };
+  }, [search]);
 
   // if (loading) {
   //   return <h1>Loading ....</h1>;
@@ -45,34 +57,37 @@ function App() {
         onChange={(e) => setSearch(e.target.value)}
       />
       {loading && <h2>Loading ...</h2>}
-      {error && <h2>Something went wrong</h2>}
-      <h2>Number of products are {products.length}</h2>
+      {error ? (
+        <h2>Something went wrong</h2>
+      ) : (
+        <h2>Number of products are {products.length}</h2>
+      )}
     </>
   );
 }
 
 export default App;
 
-const customeReactQuery = (urlPath) => {
-  const [products, setProducts] = useState([]);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+// const customeReactQuery = (urlPath) => {
+//   const [products, setProducts] = useState([]);
+//   const [error, setError] = useState(false);
+//   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        setError(false);
-        const response = await axios.get(urlPath);
-        console.log("res", response.data);
-        setProducts(response.data);
-        setLoading(false);
-      } catch (error) {
-        setError(true);
-        setLoading(false);
-      }
-    })();
-  }, []);
+//   useEffect(() => {
+//     (async () => {
+//       try {
+//         setLoading(true);
+//         setError(false);
+//         const response = await axios.get(urlPath);
+//         console.log("res", response.data);
+//         setProducts(response.data);
+//         setLoading(false);
+//       } catch (error) {
+//         setError(true);
+//         setLoading(false);
+//       }
+//     })();
+//   }, []);
 
-  return [products, error, loading];
-};
+//   return [products, error, loading];
+// };

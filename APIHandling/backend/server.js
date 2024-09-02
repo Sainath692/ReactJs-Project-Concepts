@@ -92,7 +92,7 @@ app.get("/api/products", (req, res) => {
 
   if (req.query.search) {
     const filterProducts = products.filter((product) =>
-      product.name.includes(req.query.search)
+      product.name.toLowerCase().includes(req.query.search.toLowerCase())
     );
     res.send(filterProducts);
     return;
