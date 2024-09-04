@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import axios from "axios";
+import { debounce } from "./helperFunction";
 
 function App() {
   // if we need to use async awaiyt in useeffect for that we need to use ()() - immediately invoked functions - we cant use async await directly
@@ -9,7 +10,7 @@ function App() {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("Laptop");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -39,6 +40,13 @@ function App() {
     };
   }, [search]);
 
+  const handleSearch = (e) => {
+    // debugger;
+    setSearch(e.target.value);
+  };
+
+  const handleDebounce = useCallback(debounce(handleSearch, 800), []);
+
   // if (loading) {
   //   return <h1>Loading ....</h1>;
   // }
@@ -54,7 +62,7 @@ function App() {
         type="text"
         placeholder="Search"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={handleDebounce}
       />
       {loading && <h2>Loading ...</h2>}
       {error ? (
