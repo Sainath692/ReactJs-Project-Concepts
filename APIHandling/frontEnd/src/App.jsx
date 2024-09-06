@@ -1,16 +1,30 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import axios from "axios";
 import { debounce } from "./helperFunction";
 
 function App() {
-  // if we need to use async awaiyt in useeffect for that we need to use ()() - immediately invoked functions - we cant use async await directly
-
-  // const [products, error, loading] = customeReactQuery("/api/products");
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const inputRef = useRef("");
+
+  const debouncedSetSearch = useCallback(
+    debounce((value) => {
+      setDebouncedSearch(value);
+      console.log("Search updated:", value);
+    }, 800),
+    []
+  );
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    inputRef.current = value;
+    setSearch(value);
+    debouncedSetSearch(value);
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -18,9 +32,12 @@ function App() {
       try {
         setLoading(true);
         setError(false);
-        const response = await axios.get(`/api/products?search=` + search, {
-          signal: controller.signal,
-        });
+        const response = await axios.get(
+          `/api/products?search=` + debouncedSearch,
+          {
+            signal: controller.signal,
+          }
+        );
         console.log("res", response.data);
         setProducts(response.data);
         setLoading(false);
@@ -34,26 +51,11 @@ function App() {
       }
     })();
 
-    //cleanup
+    // Cleanup
     return () => {
       controller.abort();
     };
-  }, [search]);
-
-  const handleSearch = (e) => {
-    // debugger;
-    setSearch(e.target.value);
-  };
-
-  const handleDebounce = useCallback(debounce(handleSearch, 800), []);
-
-  // if (loading) {
-  //   return <h1>Loading ....</h1>;
-  // }
-
-  // if (error) {
-  //   return <h1>Something went wrong</h1>;
-  // }
+  }, [debouncedSearch]);
 
   return (
     <>
@@ -62,7 +64,7 @@ function App() {
         type="text"
         placeholder="Search"
         value={search}
-        onChange={handleDebounce}
+        onChange={handleInputChange}
       />
       {loading && <h2>Loading ...</h2>}
       {error ? (
@@ -75,27 +77,3 @@ function App() {
 }
 
 export default App;
-
-// const customeReactQuery = (urlPath) => {
-//   const [products, setProducts] = useState([]);
-//   const [error, setError] = useState(false);
-//   const [loading, setLoading] = useState(false);
-
-//   useEffect(() => {
-//     (async () => {
-//       try {
-//         setLoading(true);
-//         setError(false);
-//         const response = await axios.get(urlPath);
-//         console.log("res", response.data);
-//         setProducts(response.data);
-//         setLoading(false);
-//       } catch (error) {
-//         setError(true);
-//         setLoading(false);
-//       }
-//     })();
-//   }, []);
-
-//   return [products, error, loading];
-// };

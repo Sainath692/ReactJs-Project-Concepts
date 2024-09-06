@@ -1,18 +1,18 @@
 /**
- * @param {function} mainFunction
+ * @param {function} func
  * @param {number} delay
  * @returns
  */
 
 export function debounce(mainFunction, delay) {
-  let timeFlag = null;
+  let timeFlag;
 
   return (...args) => {
-    if (timeFlag === null) {
-      timeFlag = setTimeout(() => {
-        mainFunction(...args);
-        timeFlag = null;
-      }, delay);
+    if (timeFlag) {
+      clearTimeout(timeFlag);
     }
+    timeFlag = setTimeout(() => {
+      mainFunction(...args);
+    }, delay);
   };
 }
