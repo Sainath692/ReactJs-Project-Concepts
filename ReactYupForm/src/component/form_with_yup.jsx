@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import * as Yup from "yup";
 
-const FormWithoutYup = () => {
+const FormWithYup = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -16,89 +17,39 @@ const FormWithoutYup = () => {
 
   const [errors, setErrors] = useState();
 
-  const isValidEmail = (email) => {
-    // Regular expression for basic email validation
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    return emailRegex.test(email);
-  };
-
-  const isValidPhoneNumber = (phoneNumber) => {
-    // Regular expression for basic phone number validation (10 digits)
-    const phoneRegex = /^\d{10}$/;
-    return phoneRegex.test(phoneNumber);
-  };
-
-  const isValidPassword = (password) => {
-    // Regular expressions for password validation
-    const symbolRegex = /[!@#$%^&*(),.?":{}|<>]/;
-    const numberRegex = /[0-9]/;
-    const upperCaseRegex = /[A-Z]/;
-    const lowerCaseRegex = /[a-z]/;
-    return (
-      password.length >= 8 &&
-      symbolRegex.test(password) &&
-      numberRegex.test(password) &&
-      upperCaseRegex.test(password) &&
-      lowerCaseRegex.test(password)
-    );
-  };
-
-  const isValidAge = (age) => {
-    return parseInt(age) >= 18 && parseInt(age) <= 100;
-  };
-
-  const validateForm = () => {
-    let newErrors = {};
-
-    if (!formData.firstName) {
-      newErrors.firstName = "First name is required";
-    }
-    if (!formData.lastName) {
-      newErrors.lastName = "Last name is required";
-    }
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!isValidEmail(formData.email)) {
-      newErrors.email = "Invalid email format";
-    }
-    if (!formData.phoneNumber) {
-      newErrors.phoneNumber = "Phone number is required";
-    } else if (!isValidPhoneNumber(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be 10 digits";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (!isValidPassword(formData.password)) {
-      newErrors.password =
-        "Password must be at least 8 characters long and contain at least one symbol, one number, one uppercase letter, and one lowercase letter";
-    }
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Confirm password is required";
-    } else if (formData.confirmPassword !== formData.password) {
-      newErrors.confirmPassword = "Passwords must match";
-    }
-    if (!formData.age) {
-      newErrors.age = "Age is required";
-    } else if (!isValidAge(formData.age)) {
-      newErrors.age =
-        "You must be at least 18 years old and not older than 100 years";
-    }
-    if (!formData.gender) {
-      newErrors.gender = "Gender is required";
-    }
-    if (formData.interests.length === 0) {
-      newErrors.interests = "Select at least one interest";
-    }
-    if (!formData.birthDate) {
-      newErrors.birthDate = "Date of birth is required";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  };
-
-  console.log(errors);
+  const validationSchema = Yup.object({
+    firstName: Yup.string().required("First Name is required"),
+    lastName: Yup.string().required("Last Name is Required"),
+    email: Yup.string()
+      .required("Email is required")
+      .email("Invalid Email Fromat"),
+    phoneNumber: Yup.string()
+      .matches(/^\d{10}$/, "Phone number must be 10 digit")
+      .required(),
+    password: Yup.string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .matches(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Password must contain at least one symbol"
+      )
+      .matches(/[0-9]/, "Password must contain at least one number")
+      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .matches(/[a-z]/, "Password must contain at least one lowercase letter"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "Passwords must match")
+      .required("Confirm password is required"),
+    age: Yup.number()
+      .typeError("Age must be a number")
+      .min(18, "You must be at least 18 years old")
+      .max(100, "You cannot be older than 100 years")
+      .required("Age is required"),
+    gender: Yup.string().required("Gender is required"),
+    interests: Yup.array()
+      .min(1, "Select at least one interest")
+      .required("Select at least one interest"),
+    birthDate: Yup.date().required("Date of birth is required"),
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -138,7 +89,7 @@ const FormWithoutYup = () => {
   return (
     <>
       <h3 style={{ display: "flex", justifyContent: "center" }}>
-        Form Validation
+        Form Validation With Yup
       </h3>
       <div className="container">
         <form className="form" onSubmit={handleSubmit}>
@@ -295,4 +246,4 @@ const FormWithoutYup = () => {
   );
 };
 
-export default FormWithoutYup;
+export default FormWithYup;
