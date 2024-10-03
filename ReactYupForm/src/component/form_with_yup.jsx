@@ -51,14 +51,17 @@ const FormWithYup = () => {
     birthDate: Yup.date().required("Date of birth is required"),
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const isValid = validateForm();
-    if (isValid) {
-      console.log("Form Submitted", formData);
-    } else {
-      console.log("Form Validation Failed");
+    try {
+      await validationSchema.validate(formData, { abortEarly: false });
+      console.log("form submitted", formData);
+    } catch (error) {
+      const newErrors = {};
+      error.inner.forEach((err) => {
+        newErrors[err.path] = err.message;
+      });
+      setErrors(newErrors);
     }
   };
 
